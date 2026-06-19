@@ -1,23 +1,26 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority`;
+let database;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+const connectDB = async () => {
+  const client = new MongoClient(process.env.MONGODB_URI, {
+    serverApi: {
+      version: ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
 
-async function connectDB() {
-  try {
-    await client.connect();
+  await client.connect();
 
-    console.log("MongoDB Connected Successfully");
-  } catch (error) {
-    console.log(error);
-  }
-}
+  database = client.db("bibliodrop");
 
-module.exports = { client, connectDB };
+  console.log("MongoDB Connected");
+};
+
+const getDB = () => database;
+
+module.exports = {
+  connectDB,
+  getDB,
+};
