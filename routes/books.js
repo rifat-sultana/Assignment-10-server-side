@@ -48,4 +48,44 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Update Delivery Status After Payment
+// Update Delivery Status After Payment
+router.patch("/delivery/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const booksCollection = getDB().collection("books");
+
+    const result = await booksCollection.updateOne(
+      { id },
+      {
+        $set: {
+          deliveryStatus: "Pending Delivery",
+          paymentStatus: "Paid",
+        },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "Book not found",
+      });
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Delivery request successful",
+      result,
+    });
+  } catch (error) {
+    console.error("Error updating delivery status:", error);
+
+    res.status(500).send({
+      success: false,
+      message: "Failed to update delivery status",
+    });
+  }
+});
+
 module.exports = router;

@@ -6,6 +6,7 @@ const cors = require("cors");
 const { connectDB } = require("./config/db");
 
 const booksRoutes = require("./routes/books");
+const paymentRoutes = require("./routes/payment");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/books", booksRoutes);
+app.use("/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");
