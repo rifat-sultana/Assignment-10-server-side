@@ -8,6 +8,15 @@ const { connectDB } = require("./config/db");
 const booksRoutes = require("./routes/books");
 const paymentRoutes = require("./routes/payment");
 
+const dashboardRoutes =
+require("./routes/dashboard");
+
+const reviewRoutes =
+require("./routes/reviews");
+
+const readingListRoutes =
+require("./routes/readingList");
+
 const app = express();
 
 app.use(cors());
@@ -15,6 +24,12 @@ app.use(express.json());
 
 app.use("/books", booksRoutes);
 app.use("/payment", paymentRoutes);
+
+app.use("/dashboard", dashboardRoutes);
+
+app.use("/reviews", reviewRoutes);
+
+app.use("/readingList", readingListRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");
