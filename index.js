@@ -17,6 +17,9 @@ require("./routes/reviews");
 const readingListRoutes =
 require("./routes/readingList");
 
+const deliveryRoutes =
+require("./routes/delivery");
+
 const app = express();
 
 app.use(cors());
@@ -28,6 +31,8 @@ app.use("/payment", paymentRoutes);
 app.use("/dashboard", dashboardRoutes);
 
 app.use("/reviews", reviewRoutes);
+
+app.use("/deliveries", deliveryRoutes);
 
 app.use("/readingList", readingListRoutes);
 
