@@ -16,7 +16,7 @@ const dashboardRoutes = require("./routes/dashboard");
 
 const reviewRoutes =require("./routes/reviews");
 
-const readingListRoutes =require("./routes/readingList");
+const readingListRoutes =require("./routes/readinglist");
 
 const deliveryRoutes =require("./routes/delivery");
 
