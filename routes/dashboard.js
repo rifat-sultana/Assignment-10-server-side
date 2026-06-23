@@ -4,39 +4,30 @@ const router = express.Router();
 
 const { getDB } = require("../config/db");
 
-// User Overview Stats
 router.get(
-  "/stats/:email",
+  "/librarian-overview",
   async (req, res) => {
+    console.log(
+      "Librarian Route Hit"
+    );
+
     try {
-      const email =
-        req.params.email;
+      const books =
+        await getDB()
+          .collection("books")
+          .find()
+          .toArray();
 
       const deliveries =
         await getDB()
-          .collection(
-            "deliveries"
-          )
-          .find({
-            userEmail: email,
-          })
+          .collection("deliveries")
+          .find()
           .toArray();
 
-      const booksRead =
-        deliveries.filter(
-          (d) =>
-            d.status ===
-            "Delivered"
-        ).length;
+      const totalBooks =
+        books.length;
 
-      const pendingDeliveries =
-        deliveries.filter(
-          (d) =>
-            d.status ===
-            "Pending Delivery"
-        ).length;
-
-      const totalSpent =
+      const totalEarnings =
         deliveries.reduce(
           (sum, item) =>
             sum +
@@ -44,37 +35,23 @@ router.get(
           0
         );
 
+      const pendingRequests =
+        deliveries.filter(
+          (d) =>
+            d.status ===
+            "Pending Delivery"
+        ).length;
+
       res.send({
-        booksRead,
-        pendingDeliveries,
-        totalSpent,
+        totalBooks,
+        totalEarnings,
+        pendingRequests,
       });
     } catch (error) {
-      console.log(error);
-
-      res.status(500).send({
-        success: false,
-      });
-    }
-  }
-);
-
-// Librarian Dashboard Deliveries
-router.get(
-  "/deliveries",
-  async (req, res) => {
-    try {
-      const deliveries =
-        await getDB()
-          .collection(
-            "deliveries"
-          )
-          .find()
-          .toArray();
-
-      res.send(deliveries);
-    } catch (error) {
-      console.log(error);
+      console.log(
+        "Librarian Overview Error:",
+        error
+      );
 
       res.status(500).send({
         success: false,
