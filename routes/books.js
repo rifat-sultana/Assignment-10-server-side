@@ -234,6 +234,35 @@ router.patch("/status/:id", async (req, res) => {
 });
 
 
+// Update Book
+router.patch("/:id", async (req, res) => {
+  try {
+    const result = await getDB()
+      .collection("books")
+      .updateOne(
+        {
+          _id: new ObjectId(req.params.id),
+        },
+        {
+          $set: req.body,
+        }
+      );
+
+    res.send({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).send({
+      success: false,
+    });
+  }
+});
+
+
+
 // Delete Book
 router.delete("/:id", async (req, res) => {
   try {
