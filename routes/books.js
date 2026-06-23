@@ -29,6 +29,34 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+router.post("/", async (req, res) => {
+  try {
+    const book = {
+      ...req.body,
+
+      status: "Pending Approval",
+
+      createdAt: new Date(),
+    };
+
+    const result = await getDB()
+      .collection("books")
+      .insertOne(book);
+
+    res.send({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+    });
+  }
+});
+
 // Get Single Book By ID
 router.get("/:id", async (req, res) => {
   try {
