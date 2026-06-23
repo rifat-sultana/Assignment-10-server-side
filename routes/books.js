@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
 // Get All Books
@@ -29,14 +30,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-
+// Add Book
 router.post("/", async (req, res) => {
   try {
     const book = {
       ...req.body,
-
       status: "Pending Approval",
-
       createdAt: new Date(),
     };
 
@@ -201,5 +200,64 @@ router.patch(
     }
   }
 );
+
+
+// Publish / Unpublish Book
+router.patch("/status/:id", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const result = await getDB()
+      .collection("books")
+      .updateOne(
+        {
+          _id: new ObjectId(req.params.id),
+        },
+        {
+          $set: {
+            status,
+          },
+        }
+      );
+
+    res.send({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).send({
+      success: false,
+    });
+  }
+});
+
+
+// Delete Book
+router.delete("/:id", async (req, res) => {
+  try {
+    const result = await getDB()
+      .collection("books")
+      .deleteOne({
+        _id: new ObjectId(
+          req.params.id
+        ),
+      });
+
+    res.send({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).send({
+      success: false,
+      message:
+        "Failed to delete book",
+    });
+  }
+});
 
 module.exports = router;
