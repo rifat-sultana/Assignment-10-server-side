@@ -72,4 +72,60 @@ router.get(
   }
 );
 
+router.get(
+  "/admin-overview",
+  async (req, res) => {
+    try {
+      const db = getDB();
+
+      const totalUsers = await db
+        .collection("users")
+        .countDocuments();
+
+      const totalBooks = await db
+        .collection("books")
+        .countDocuments();
+
+      const totalDeliveries = await db
+        .collection("deliveries")
+        .countDocuments();
+
+      const revenueResult = await db
+        .collection("deliveries")
+        .aggregate([
+          { $match: { status: "Delivered" } },
+          { $group: { _id: null, total: { $sum: "$fee" } } },
+        ])
+        .toArray();
+
+      const totalRevenue =
+        revenueResult.length > 0
+          ? revenueResult[0].total
+          : 0;
+
+      const booksByCategory = await db
+        .collection("books")
+        .aggregate([
+          { $group: { _id: "$category", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ])
+        .toArray();
+
+      res.send({
+        totalUsers,
+        totalBooks,
+        totalDeliveries,
+        totalRevenue,
+        booksByCategory: booksByCategory.map((item) => ({
+          category: item._id || "Uncategorized",
+          count: item.count,
+        })),
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({ success: false });
+    }
+  }
+);
+
 module.exports = router;

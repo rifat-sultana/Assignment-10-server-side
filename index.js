@@ -20,6 +20,7 @@ const reviewRoutes =require("./routes/reviews");
 const readingListRoutes =require("./routes/readingList");
 
 const deliveryRoutes =require("./routes/delivery");
+const usersRoutes =require("./routes/users");
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.use("/readingList", readingListRoutes);
 app.use("/wishlist", wishlistRoutes);
 
 app.use("/auth", authRoutes);
+
+app.use("/users", usersRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running");

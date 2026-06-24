@@ -4,8 +4,6 @@ const router = express.Router();
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
-console.log("DELIVERY FILE VERSION 999");
-
 // ======================================
 // Get All Deliveries
 // ======================================
@@ -54,6 +52,14 @@ router.get("/:email", async (req, res) => {
 // ======================================
 router.patch("/status/:id", async (req, res) => {
   try {
+    const updateFields = {
+      status: "Delivered",
+    };
+
+    if (req.body.librarianEmail) {
+      updateFields.librarianEmail = req.body.librarianEmail;
+    }
+
     const result = await getDB()
       .collection("deliveries")
       .updateOne(
@@ -61,9 +67,7 @@ router.patch("/status/:id", async (req, res) => {
           _id: new ObjectId(req.params.id),
         },
         {
-          $set: {
-            status: "Delivered",
-          },
+          $set: updateFields,
         }
       );
 
