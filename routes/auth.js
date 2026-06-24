@@ -36,8 +36,37 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+  console.log("Login Body:", req.body);
+  console.log("Admin Email:", process.env.ADMIN_EMAIL);
+  console.log("Admin Password:", process.env.ADMIN_PASSWORD);
   try {
     const { email, password } = req.body;
+
+    // Admin Login
+if (
+  email === process.env.ADMIN_EMAIL &&
+  password === process.env.ADMIN_PASSWORD
+) {
+  const token = jwt.sign(
+    {
+      email,
+      role: "admin",
+      name: "Admin",
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return res.send({
+    success: true,
+    token,
+    user: {
+      email,
+      role: "admin",
+      name: "Admin",
+    },
+  });
+}
 
     if (!email || !password) {
       return res.status(400).send({ success: false, message: "Email and password are required" });
