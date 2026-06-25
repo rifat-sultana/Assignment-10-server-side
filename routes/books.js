@@ -5,27 +5,47 @@ const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
 // Get All Books
+// Get All Books (Search + Filter)
 router.get("/", async (req, res) => {
   try {
-    const booksCollection =
-      getDB().collection("books");
+    const {
+      search,
+      category,
+      status,
+    } = req.query;
 
-    const books =
-      await booksCollection
-        .find()
-        .toArray();
+    const query = {};
 
-    res.status(200).send(books);
+    // Search by Title
+    if (search) {
+      query.title = {
+        $regex: search,
+        $options: "i",
+      };
+    }
+
+    // Filter by Category
+    if (category && category !== "All") {
+      query.category = category;
+    }
+
+    // Filter by Status
+    if (status && status !== "All") {
+      query.status = status;
+    }
+
+    const books = await getDB()
+      .collection("books")
+      .find(query)
+      .toArray();
+
+    res.send(books);
   } catch (error) {
-    console.error(
-      "Error fetching books:",
-      error
-    );
+    console.error(error);
 
     res.status(500).send({
       success: false,
-      message:
-        "Failed to fetch books",
+      message: "Failed to fetch books",
     });
   }
 });
