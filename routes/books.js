@@ -4,19 +4,20 @@ const router = express.Router();
 const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
-// Get All Books
 // Get All Books (Search + Filter)
+// Get All Books (Search + Filter + Pagination)
 router.get("/", async (req, res) => {
   try {
     const {
       search,
       category,
       status,
+      page = 1,
+      limit = 6,
     } = req.query;
 
     const query = {};
 
-    // Search by Title
     if (search) {
       query.title = {
         $regex: search,
@@ -24,22 +25,36 @@ router.get("/", async (req, res) => {
       };
     }
 
-    // Filter by Category
     if (category && category !== "All") {
       query.category = category;
     }
 
-    // Filter by Status
     if (status && status !== "All") {
       query.status = status;
     }
 
-    const books = await getDB()
-      .collection("books")
+    const currentPage = Number(page);
+    const pageSize = Number(limit);
+
+    const booksCollection = getDB().collection("books");
+
+    const totalBooks =
+      await booksCollection.countDocuments(query);
+
+    const books = await booksCollection
       .find(query)
+      .skip((currentPage - 1) * pageSize)
+      .limit(pageSize)
       .toArray();
 
-    res.send(books);
+    res.send({
+      books,
+      totalBooks,
+      currentPage,
+      totalPages: Math.ceil(
+        totalBooks / pageSize
+      ),
+    });
   } catch (error) {
     console.error(error);
 
