@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
   res.send("Backend Running");
 });
 
-const PORT = process.env.PORT || 5000;
+// const PORT = process.env.PORT || 5000;
 
 // create the admin account during server initialization
 const seedAdmin = async () => {
@@ -94,10 +94,8 @@ const seedAdmin = async () => {
 connectDB()
   .then(async () => {
     await seedAdmin();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    console.log("Database connected");
   })
-  .catch((error) => {
-    console.log(error);
-  });
+  .catch(console.error);
+
+module.exports = app;
