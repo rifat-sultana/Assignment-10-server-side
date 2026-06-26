@@ -84,4 +84,33 @@ router.patch("/status/:id", async (req, res) => {
   }
 });
 
+router.get(
+  "/can-review/:bookId/:email",
+  async (req, res) => {
+    try {
+      const { bookId, email } = req.params;
+
+      const delivery =
+        await getDB()
+          .collection("deliveries")
+          .findOne({
+            bookId: Number(bookId),
+            userEmail: email,
+            status: "Delivered",
+          });
+
+      res.send({
+        canReview: !!delivery,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).send({
+        canReview: false,
+      });
+    }
+  }
+);
+
 module.exports = router;

@@ -54,54 +54,48 @@ router.get("/:email", async (req, res) => {
 // =======================
 router.post("/", async (req, res) => {
   try {
-    const {
-      bookId,
-      userEmail,
-      rating,
-      comment,
-    } = req.body;
+    const { bookId, userEmail, rating, comment } =
+      req.body;
 
     const db = getDB();
 
-    const deliveriesCollection =
-      db.collection("deliveries");
-
-    const reviewsCollection =
-      db.collection("reviews");
-
-    // Verify delivery
+    // Verify Delivered
     const delivery =
-      await deliveriesCollection.findOne({
-        bookId,
-        userEmail,
-        status: "Delivered",
-      });
+      await db
+        .collection("deliveries")
+        .findOne({
+          bookId: Number(bookId),
+          userEmail,
+          status: "Delivered",
+        });
 
     if (!delivery) {
       return res.status(403).send({
         success: false,
         message:
-          "Only users who received this book can review.",
+          "Only users with Delivered status can review this book.",
       });
     }
 
     // Prevent duplicate review
-    const existingReview =
-      await reviewsCollection.findOne({
-        bookId,
-        userEmail,
-      });
+    const existing =
+      await db
+        .collection("reviews")
+        .findOne({
+          bookId: Number(bookId),
+          userEmail,
+        });
 
-    if (existingReview) {
-      return res.status(400).send({
+    if (existing) {
+      return res.send({
         success: false,
         message:
-          "You have already reviewed this book.",
+          "You already reviewed this book.",
       });
     }
 
-    await reviewsCollection.insertOne({
-      bookId,
+    await db.collection("reviews").insertOne({
+      bookId: Number(bookId),
       userEmail,
       rating,
       comment,
@@ -113,13 +107,14 @@ router.post("/", async (req, res) => {
       message:
         "Review submitted successfully.",
     });
-  } catch (error) {
-    console.error(error);
+
+  } catch (err) {
+    console.error(err);
 
     res.status(500).send({
       success: false,
       message:
-        "Failed to submit review",
+        "Failed to submit review.",
     });
   }
 });
