@@ -5,13 +5,19 @@ const { ObjectId } = require("mongodb");
 const { getDB } = require("../config/db");
 
 // ======================================
-// Get All Deliveries
+// Get All Deliveries (with optional email filter)
 // ======================================
 router.get("/", async (req, res) => {
   try {
+    const { librarianEmail } = req.query;
+    const query = {};
+    if (librarianEmail) {
+      query.librarianEmail = librarianEmail;
+    }
+
     const deliveries = await getDB()
       .collection("deliveries")
-      .find()
+      .find(query)
       .toArray();
 
     res.send(deliveries);
@@ -48,39 +54,31 @@ router.get("/:email", async (req, res) => {
 });
 
 // ======================================
-// Mark Delivery as Delivered
+// Update Delivery Status
 // ======================================
 router.patch("/status/:id", async (req, res) => {
   try {
-    const updateFields = {
-      status: "Delivered",
-    };
+    const { status, librarianEmail } = req.body;
 
-    if (req.body.librarianEmail) {
-      updateFields.librarianEmail = req.body.librarianEmail;
+    const updateFields = {};
+    if (status) {
+      updateFields.status = status;
+    }
+    if (librarianEmail) {
+      updateFields.librarianEmail = librarianEmail;
     }
 
     const result = await getDB()
       .collection("deliveries")
       .updateOne(
-        {
-          _id: new ObjectId(req.params.id),
-        },
-        {
-          $set: updateFields,
-        }
+        { _id: new ObjectId(req.params.id) },
+        { $set: updateFields }
       );
 
-    res.send({
-      success: true,
-      result,
-    });
+    res.send({ success: true, result });
   } catch (error) {
     console.error(error);
-
-    res.status(500).send({
-      success: false,
-    });
+    res.status(500).send({ success: false });
   }
 });
 
