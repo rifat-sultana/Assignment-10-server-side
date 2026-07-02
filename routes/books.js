@@ -99,37 +99,30 @@ router.post("/", async (req, res) => {
 // Get Single Book By ID
 router.get("/:id", async (req, res) => {
   try {
-    const id = parseInt(
-      req.params.id
-    );
+    const { id } = req.params;
+    const booksCollection = getDB().collection("books");
 
-    const booksCollection =
-      getDB().collection("books");
+    let book = null;
 
-    const book =
-      await booksCollection.findOne({
-        id,
-      });
+    try {
+      book = await booksCollection.findOne({ _id: new ObjectId(id) });
+    } catch {
+      book = await booksCollection.findOne({ id: parseInt(id) });
+    }
 
     if (!book) {
       return res.status(404).send({
         success: false,
-        message:
-          "Book not found",
+        message: "Book not found",
       });
     }
 
     res.status(200).send(book);
   } catch (error) {
-    console.error(
-      "Error fetching book:",
-      error
-    );
-
+    console.error("Error fetching book:", error);
     res.status(500).send({
       success: false,
-      message:
-        "Failed to fetch book",
+      message: "Failed to fetch book",
     });
   }
 });
@@ -139,103 +132,63 @@ router.patch(
   "/delivery/:id",
   async (req, res) => {
     try {
-      const id = parseInt(
-        req.params.id
-      );
+      const { id } = req.params;
+      const { userEmail } = req.body;
 
-      const { userEmail } =
-        req.body;
+      const booksCollection = getDB().collection("books");
+      const deliveriesCollection = getDB().collection("deliveries");
 
-      const booksCollection =
-        getDB().collection(
-          "books"
-        );
-
-      const deliveriesCollection =
-        getDB().collection(
-          "deliveries"
-        );
-
-      const book =
-        await booksCollection.findOne(
-          { id }
-        );
+      let book = null;
+      try {
+        book = await booksCollection.findOne({ _id: new ObjectId(id) });
+      } catch {
+        book = await booksCollection.findOne({ id: parseInt(id) });
+      }
 
       if (!book) {
-        return res
-          .status(404)
-          .send({
-            success: false,
-            message:
-              "Book not found",
-          });
+        return res.status(404).send({
+          success: false,
+          message: "Book not found",
+        });
       }
 
-      const existingDelivery =
-        await deliveriesCollection.findOne(
-          {
-            bookId:
-              book.id,
-            userEmail,
-          }
-        );
+      const existingDelivery = await deliveriesCollection.findOne({
+        bookId: book._id.toString(),
+        userEmail,
+      });
 
-      if (
-        existingDelivery
-      ) {
-        return res
-          .status(400)
-          .send({
-            success: false,
-            message:
-              "Delivery already requested",
-          });
+      if (existingDelivery) {
+        return res.status(400).send({
+          success: false,
+          message: "Delivery already requested",
+        });
       }
 
-      await deliveriesCollection.insertOne(
-        {
-          bookId:
-            book.id,
-          title:
-            book.title,
-          fee:
-            book.price,
-          userEmail,
-          status:
-            "Pending Delivery",
-          requestDate:
-            new Date(),
-          transactionId:
-            "TXN" +
-            Date.now(),
-        }
-      );
+      await deliveriesCollection.insertOne({
+        bookId: book._id.toString(),
+        title: book.title,
+        fee: book.price,
+        userEmail,
+        librarianEmail: book.librarianEmail || "",
+        status: "Pending Delivery",
+        requestDate: new Date(),
+        transactionId: "TXN" + Date.now(),
+      });
 
       await booksCollection.updateOne(
-        { id },
-        {
-          $set: {
-            deliveryStatus:
-              "Pending Delivery",
-          },
-        }
+        { _id: book._id },
+        { $set: { deliveryStatus: "Pending Delivery" } }
       );
 
       res.send({
         success: true,
-        message:
-          "Delivery request successful",
+        message: "Delivery request successful",
       });
     } catch (error) {
-      console.error(
-        "Delivery Error:",
-        error
-      );
-
+      console.error("Delivery Error:", error);
       res.status(500).send({
         success: false,
-        message:
-          "Failed to request delivery",
+        message: "Failed to request delivery",
       });
     }
   }
