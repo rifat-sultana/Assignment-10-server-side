@@ -8,14 +8,18 @@ router.get(
   "/librarian-overview",
   async (req, res) => {
     try {
+      const { librarianEmail } = req.query;
+      const bookQuery = librarianEmail ? { librarianEmail } : {};
+      const deliveryQuery = librarianEmail ? { librarianEmail } : {};
+
       const books = await getDB()
         .collection("books")
-        .find()
+        .find(bookQuery)
         .toArray();
 
       const deliveries = await getDB()
         .collection("deliveries")
-        .find()
+        .find(deliveryQuery)
         .toArray();
 
       const totalBooks = books.length;
@@ -56,11 +60,23 @@ router.get(
             count,
           }));
 
+      const booksByStatus = books.reduce((acc, book) => {
+        const status = book.status || "Unknown";
+        const existing = acc.find((item) => item.status === status);
+        if (existing) {
+          existing.count++;
+        } else {
+          acc.push({ status, count: 1 });
+        }
+        return acc;
+      }, []);
+
       res.send({
         totalBooks,
         totalEarnings,
         pendingRequests,
         mostRequestedBooks,
+        booksByStatus,
       });
     } catch (error) {
       console.log(error);
