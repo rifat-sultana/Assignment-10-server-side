@@ -15,13 +15,12 @@ const paymentRoutes = require("./routes/payment");
 
 const dashboardRoutes = require("./routes/dashboard");
 
-const reviewRoutes =require("./routes/reviews");
+const reviewRoutes = require("./routes/reviews");
 
-const readingListRoutes =require("./routes/readingList");
+const readingListRoutes = require("./routes/readingList");
 
-const deliveryRoutes =require("./routes/delivery");
-const usersRoutes =require("./routes/users");
-
+const deliveryRoutes = require("./routes/delivery");
+const usersRoutes = require("./routes/users");
 
 const app = express();
 
@@ -45,8 +44,6 @@ app.use("/wishlist", wishlistRoutes);
 app.use("/auth", authRoutes);
 
 app.use("/users", usersRoutes);
-
-
 
 app.get("/", (req, res) => {
   res.send("Backend Running");
@@ -95,7 +92,10 @@ connectDB()
   .then(async () => {
     await seedAdmin();
     console.log("Database connected");
+
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   .catch(console.error);
-
-module.exports = app;
