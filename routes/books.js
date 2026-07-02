@@ -12,6 +12,7 @@ router.get("/", async (req, res) => {
       search,
       category,
       status,
+      librarianEmail,
       page = 1,
       limit = 6,
     } = req.query;
@@ -31,6 +32,10 @@ router.get("/", async (req, res) => {
 
     if (status && status !== "All") {
       query.status = status;
+    }
+
+    if (librarianEmail) {
+      query.librarianEmail = librarianEmail;
     }
 
     const currentPage = Number(page);
@@ -242,29 +247,25 @@ router.patch("/status/:id", async (req, res) => {
   try {
     const { status } = req.body;
 
+    const book = await getDB()
+      .collection("books")
+      .findOne({ _id: new ObjectId(req.params.id) });
+
+    if (!book) {
+      return res.status(404).send({ success: false, message: "Book not found" });
+    }
+
     const result = await getDB()
       .collection("books")
       .updateOne(
-        {
-          _id: new ObjectId(req.params.id),
-        },
-        {
-          $set: {
-            status,
-          },
-        }
+        { _id: new ObjectId(req.params.id) },
+        { $set: { status } }
       );
 
-    res.send({
-      success: true,
-      result,
-    });
+    res.send({ success: true, result });
   } catch (error) {
     console.error(error);
-
-    res.status(500).send({
-      success: false,
-    });
+    res.status(500).send({ success: false });
   }
 });
 
